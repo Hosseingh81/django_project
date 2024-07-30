@@ -1,6 +1,7 @@
-from datetime import datetime, timezone
+from django.utils import timezone
+# from datetime import datetime
 from django.db import models
-import datetime
+from datetime import timedelta
 
 
 class Question(models.Model):
@@ -9,7 +10,13 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
     def was_published_recently(self):
-        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
+        now = timezone.now()
+        return now - timedelta(days=1) <= self.pub_date <= now
+    def is_string(self):
+        if type(self.question_text)==str:
+            return True
+        else:
+            return False
 
 
 class Choice(models.Model):
