@@ -182,10 +182,29 @@ class viewsfile_Tests(TestCase):
         self.assertContains(response,'user1')
 
 
+    def test_user_can_not_vote_more_than_once_for_the_same_question(self):
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
+        self.question1 = create_question(question_text="question1.", days=-3)
+        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+        self.question1_choice2=Choice.objects.create(question=self.question1,choice_text='question1_choice2.')
+        self.client.post(path='/polls/1/vote/',data={'choice':['1']})
+        response = self.client.post(path='/polls/1/vote/',data={'choice':['2']})
+        self.assertIsNone(response.context)
 
-                
-
+    def test_one_user_can_vote_two_different_questions(self):
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
+        self.question1 = create_question(question_text="question1.", days=-3)
+        self.question2= create_question(question_text='question2.',days=-3)
+        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+        self.question2_choice1=Choice.objects.create(question=self.question2,choice_text='question2_choice1.')    
+        self.client.post(path='/polls/1/vote/',data={'choice':['1']})         
+        self.client.post(path='/polls/2/vote/',data={'choice':['2']})
+        question2_voted=Vote.objects.filter(choice=Choice.objects.get(id=2))
+        self.assertIsNotNone(question2_voted.first())
  
+
 
 
 

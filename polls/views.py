@@ -45,10 +45,21 @@ def vote(request,question_id):
     voted_question=get_object_or_404(Question,pk=question_id)
     voted_user=request.user
     voted_choice=Choice.objects.get(id=request.POST["choice"])
-    if request.user.is_authenticated:
-        v=Vote(user=voted_user,choice=voted_choice)      
-        v.save()
-        return render(request,"polls/results.html",{"question":voted_question})
+    same_users_vote=Vote.objects.filter(user=request.user)
+    same_users_vote.filter(choice=voted_choice)
+    for x in same_users_vote:
+        vote_question=x.choice.question
+    if request.user.is_authenticated :
+        if len(same_users_vote)==0 :
+            v=Vote(user=voted_user,choice=voted_choice)      
+            v.save()
+            return render(request,"polls/results.html",{"question":voted_question})
+        elif vote_question!=voted_question:
+            v=Vote(user=voted_user,choice=voted_choice)      
+            v.save()
+            return render(request,"polls/results.html",{"question":voted_question})
+        else:
+            return HttpResponse("you can't vote more than onece!")
     else:
         return HttpResponse("please login first.")
 
