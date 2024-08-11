@@ -7,6 +7,7 @@ from .models import Question,Vote,Choice
 from .views import *
 from .urls import *
 from django.contrib.auth.models import User
+from .forms import NameForm
 class QuestionModelTests(TestCase):
     def test_was_published_recently_with_future_question(self):
         """
@@ -203,9 +204,14 @@ class viewsfile_Tests(TestCase):
         self.client.post(path='/polls/2/vote/',data={'choice':['2']})
         question2_voted=Vote.objects.filter(choice=Choice.objects.get(id=2))
         self.assertIsNotNone(question2_voted.first())
- 
-
-
+class formtest(TestCase):
+    def test_post_request_returns_status_code_200(self): #just test that the response code of the post of the url /polls/add_question/is 200
+        response=self.client.post(path='/polls/add_question/' , data={'question':'question1.'})
+        self.assertEqual(response.status_code,200)
+    def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
+        self.client.post(path='/polls/add_question/' , data={'question':'question1.'})
+        question1=Question.objects.filter(question_text='question1.')
+        self.assertIsNotNone(question1.first())
 
 
 
