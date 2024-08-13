@@ -80,11 +80,13 @@ def add_question(request):
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
+            print("in is_valid", form)
             return HttpResponse("/thanks/")
 
     # if a GET (or any other method) we'll create a blank form
     else:
-        form = AddquestionForm()
+        form= AddquestionForm()
+        print('in else',form)
         return render(request, "polls/add_question.html", {"form": form})
 
 
