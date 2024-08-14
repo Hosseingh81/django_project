@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.template import loader
 from django.http import HttpResponse
 from .models import Question
 from django.shortcuts import render
@@ -14,7 +13,6 @@ from django.views import generic
 from django.utils import timezone
 from django.template.loader import render_to_string
 from .forms import AddquestionForm
-from django.core.mail import send_mail
 
 class IndexView(generic.ListView):
     template_name = "polls/index.html"
