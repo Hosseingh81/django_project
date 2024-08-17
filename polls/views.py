@@ -2,16 +2,10 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Question
 from django.shortcuts import render
-from django.http import Http404
 from django.shortcuts import get_object_or_404, render
-from django.db.models import F
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
 from .models import Choice, Question,Vote
 from django.views import generic
 from django.utils import timezone
-from django.template.loader import render_to_string
 from .forms import AddquestionForm
 
 class IndexView(generic.ListView):
@@ -65,12 +59,11 @@ def vote(request,question_id):
         return HttpResponse("please login first.")
     
 
-def add_question(request):
+def add_question(request):# this func passes the needed agruements to the add_question.html
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         form = AddquestionForm(request.POST)
-        # print(request.POST)
         # check whether it's valid:
         if form.is_valid():
             question=form.cleaned_data['question']
@@ -78,13 +71,11 @@ def add_question(request):
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
-            print("in is_valid", form)
-            return HttpResponse("/thanks/")
+            return HttpResponse("thanks")
 
     # if a GET (or any other method) we'll create a blank form
     else:
         form= AddquestionForm()
-        print('in else',form)
         return render(request, "polls/add_question.html", {"form": form})
 
 
