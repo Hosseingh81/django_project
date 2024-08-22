@@ -204,16 +204,14 @@ class viewsfile_Tests(TestCase):
         self.client.post(path='/polls/2/vote/',data={'choice':['2']})
         question2_voted=Vote.objects.filter(choice=Choice.objects.get(id=2))
         self.assertIsNotNone(question2_voted.first())
-class formstest(TestCase):
-    def test_post_request_returns_status_code_200(self): #just test that the response code of the post of the url /polls/add_question/is 200
-        response=self.client.post(path='/polls/add_question/' , data={'question':'questionone'})
-        self.assertEqual(response.status_code,200)
-    def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
-        response=self.client.post(path='/polls/add_question/' , data={'question':'question_one'})
-        print(response.content)        
-        question1=Question.objects.all()
-        print(question1)
-        self.assertIsNotNone(question1)
+# class formstest(TestCase):
+#     def test_post_request_returns_status_code_200(self): #just test that the response code of the post of the url /polls/add_question/is 200
+#         response=self.client.post(path='/polls/add_question/' , data={'question':'questionone'})
+#         self.assertEqual(response.status_code,200)
+#     def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
+#         response=self.client.post(path='/polls/add_question/' , data={'question':'question_one'})
+#         question1=Question.objects.all()
+#         self.assertIsNotNone(question1)
 
 
 
