@@ -41,7 +41,7 @@ class DetailView(generic.DetailView):
 class VoteView(generic.ListView, SuccessMessageMixin):
     template_name="polls/results.html"
     pk_url_kwarg='question_id'
-    http_method_names=['get','post']
+    # http_method_names=['get','post']
     success_message="your vote has been saved seccssfuly"
     def post(self,request,question_id):
         request=self.request
