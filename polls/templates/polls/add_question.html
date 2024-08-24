@@ -1,11 +1,6 @@
-<form action="/polls/add_question/" method="post">
+<form method="POST" >
     {% csrf_token %} 
-    {{ form.non_field_errors }}
-    {% for field in form %}
-    <div class="fieldWrapper">
-        {{ field.errors }}
-        {{ field.label_tag }} {{ field }}  
+    {{ form.as_p }} 
         <input type = "submit" value = "Submit" >   
     </div>
-{% endfor %}
 </form> 
