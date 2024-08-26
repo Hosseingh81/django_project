@@ -42,10 +42,14 @@ class Add_questionView(generic.FormView,SuccessMessageMixin):
     template_name="polls/add_question.html"  
     success_url = "/polls/question_saved/"
     def form_valid(self, form):
-        print(self.request.POST)
+        if super().form_valid(form):
+            print(self.request.POST)
+            question_text=self.request.POST['question']
+            print(question_text)
+            Question.objects.create(question_text=question_text,pub_date=timezone.now())
         return super().form_valid(form)
 
-def question_saved(request):
+def show_question_saved_page(request):
     return HttpResponse("question_saved")
 
     

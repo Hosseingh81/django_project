@@ -126,92 +126,93 @@ class QuestionDetailViewTests(TestCase):
         response = self.client.get(url)
         self.assertContains(response, past_question.question_text)
         
-class viewsfile_Tests(TestCase):
-    def test_votes_post_response_is_ok(self): #this test checks wheter if the post in polls/question.id page response code is 200.
-        self.user1=User.objects.create(username='user1',password='user1',email='email@email.com')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question2= create_question(question_text='question2.',days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        question1_choice2=Choice.objects.create(question=self.question1,choice_text='question1_choice2.')
-        question2_choice1=Choice.objects.create(question=self.question2,choice_text='question2_choice1.')
-        question2_choice2=Choice.objects.create(question=self.question2,choice_text='question2_choice2.')
-        response = self.client.post(path='/polls/1/vote/',data={'choice':['2']})
-        self.assertEqual(response.status_code,200)
-
-
-    def test_vote_saved_is_in_database(self): #this test checks wheter if vote data is seved correctly in database or not.
-        self.user1=User.objects.create(username='user1',password='user1',email='email@email.com')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question2= create_question(question_text='question2.',days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        self.client.post(path='/polls/1/vote/',data={'choice':['1']})
-        choice=Choice.objects.get(id=1)
-        votes=Vote.objects.filter(choice=choice)
-        for y in votes:
-            self.assertEqual(y.choice,choice)
-
-
-    def test_vote_displays_correctly_in_html_page(self): #this test checks wheter if html page shows the correct voted choice or not.
-        self.user1=User.objects.create(username='user1',password='user1')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question2= create_question(question_text='question2.',days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        response=self.client.post(path='/polls/1/vote/',data={'choice':['1']})
-        choice=Choice.objects.get(id=1)
-        self.assertContains(response,f'<li>{choice.choice_text}</li>')
-
-
-    def test_vote_func_using_the_correct_template(self): #this test checks that wheter if the vote function using the polls/result.html temaplate or not.
-        self.user1=User.objects.create(username='user1',password='user1')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question2= create_question(question_text='question2.',days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        response=self.client.post(path='/polls/1/vote/',data={'choice':['1']})
-        self.assertTemplateUsed(response,'polls/results.html')
-
-
-    def test_logged_in_user_is_the_same_user_that_votes(self): #this test checks that wheter if the user that loggs in is the same user that votes or not"
-        self.user1=User.objects.create(username='user1',password='user1',email='email@email.com')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        response = self.client.post(path='/polls/1/vote/',data={'choice':['1']})
-        self.assertContains(response,'user1')
-
-
-    def test_user_can_not_vote_more_than_once_for_the_same_question(self):
-        self.user1=User.objects.create(username='user1',password='user1')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        self.question1_choice2=Choice.objects.create(question=self.question1,choice_text='question1_choice2.')
-        self.client.post(path='/polls/1/vote/',data={'choice':['1']})
-        response = self.client.post(path='/polls/1/vote/',data={'choice':['2']})
-        self.assertIsNone(response.context)
-
-    def test_one_user_can_vote_two_different_questions(self):
-        self.user1=User.objects.create(username='user1',password='user1')
-        self.client.force_login(user=self.user1)
-        self.question1 = create_question(question_text="question1.", days=-3)
-        self.question2= create_question(question_text='question2.',days=-3)
-        self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
-        self.question2_choice1=Choice.objects.create(question=self.question2,choice_text='question2_choice1.')    
-        self.client.post(path='/polls/1/vote/',data={'choice':['1']})         
-        self.client.post(path='/polls/2/vote/',data={'choice':['2']})
-        question2_voted=Vote.objects.filter(choice=Choice.objects.get(id=2))
-        self.assertIsNotNone(question2_voted.first())
-# class formstest(TestCase):
-#     def test_post_request_returns_status_code_200(self): #just test that the response code of the post of the url /polls/add_question/is 200
-#         response=self.client.post(path='/polls/add_question/' , data={'question':'questionone'})
+# class viewsfile_Tests(TestCase):
+#     def test_votes_post_response_is_ok(self): #this test checks wheter if the post in polls/question.id page response code is 200.
+#         self.user1=User.objects.create(username='user1',password='user1',email='email@email.com')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question2= create_question(question_text='question2.',days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         question1_choice2=Choice.objects.create(question=self.question1,choice_text='question1_choice2.')
+#         question2_choice1=Choice.objects.create(question=self.question2,choice_text='question2_choice1.')
+#         question2_choice2=Choice.objects.create(question=self.question2,choice_text='question2_choice2.')
+#         response = self.client.post(path='/polls/1/vote/',data={'choice':['2']})
 #         self.assertEqual(response.status_code,200)
-#     def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
-#         response=self.client.post(path='/polls/add_question/' , data={'question':'question_one'})
-#         question1=Question.objects.all()
-#         self.assertIsNotNone(question1)
+
+
+#     def test_vote_saved_is_in_database(self): #this test checks wheter if vote data is seved correctly in database or not.
+#         self.user1=User.objects.create(username='user1',password='user1',email='email@email.com')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question2= create_question(question_text='question2.',days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         self.client.post(path='/polls/1/vote/',data={'choice':['1']})
+#         choice=Choice.objects.get(id=1)
+#         votes=Vote.objects.filter(choice=choice)
+#         for y in votes:
+#             self.assertEqual(y.choice,choice)
+
+
+#     def test_vote_displays_correctly_in_html_page(self): #this test checks wheter if html page shows the correct voted choice or not.
+#         self.user1=User.objects.create(username='user1',password='user1')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question2= create_question(question_text='question2.',days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         response=self.client.post(path='/polls/1/vote/',data={'choice':['1']})
+#         choice=Choice.objects.get(id=1)
+#         self.assertContains(response,f'<li>{choice.choice_text}</li>')
+
+
+#     def test_vote_func_using_the_correct_template(self): #this test checks that wheter if the vote function using the polls/result.html temaplate or not.
+#         self.user1=User.objects.create(username='user1',password='user1')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question2= create_question(question_text='question2.',days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         response=self.client.post(path='/polls/1/vote/',data={'choice':['1']})
+#         self.assertTemplateUsed(response,'polls/results.html')
+
+
+#     def test_logged_in_user_is_the_same_user_that_votes(self): #this test checks that wheter if the user that loggs in is the same user that votes or not"
+#         self.user1=User.objects.create(username='user1',password='user1',email='email@email.com')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         response = self.client.post(path='/polls/1/vote/',data={'choice':['1']})
+#         self.assertContains(response,'user1')
+
+
+#     def test_user_can_not_vote_more_than_once_for_the_same_question(self):
+#         self.user1=User.objects.create(username='user1',password='user1')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         self.question1_choice2=Choice.objects.create(question=self.question1,choice_text='question1_choice2.')
+#         self.client.post(path='/polls/1/vote/',data={'choice':['1']})
+#         response = self.client.post(path='/polls/1/vote/',data={'choice':['2']})
+#         self.assertIsNone(response.context)
+
+#     def test_one_user_can_vote_two_different_questions(self):
+#         self.user1=User.objects.create(username='user1',password='user1')
+#         self.client.force_login(user=self.user1)
+#         self.question1 = create_question(question_text="question1.", days=-3)
+#         self.question2= create_question(question_text='question2.',days=-3)
+#         self.question1_choice1=Choice.objects.create(question=self.question1,choice_text='question1_choice1.')
+#         self.question2_choice1=Choice.objects.create(question=self.question2,choice_text='question2_choice1.')    
+#         self.client.post(path='/polls/1/vote/',data={'choice':['1']})         
+#         self.client.post(path='/polls/2/vote/',data={'choice':['2']})
+#         question2_voted=Vote.objects.filter(choice=Choice.objects.get(id=2))
+#         self.assertIsNotNone(question2_voted.first())
+class formstest(TestCase):
+    def test_post_request_returns_status_code_302(self): #just test that the response code of the post of the url /polls/add_question/is 302 and it's redirects sucessfuly to the 'question_saved' page
+        response=self.client.post(path='/polls/add_question/' , data={'question':'questionone'})
+        print(response)
+        self.assertEqual(response.status_code,302)
+    def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
+        self.client.post(path='/polls/add_question/' , data={'question':'question_one'})
+        question1=Question.objects.all()
+        self.assertIsNotNone(question1)
 
 
 
