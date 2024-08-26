@@ -7,6 +7,9 @@ from .models import Question,Vote,Choice
 from .views import *
 from .urls import *
 from django.contrib.auth.models import User
+from django import forms
+from . import forms
+
 
 class QuestionModelTests(TestCase):
     def test_was_published_recently_with_future_question(self):
@@ -207,19 +210,44 @@ class QuestionDetailViewTests(TestCase):
 class formstest(TestCase):
     def test_post_request_returns_status_code_302(self): #just test that the response code of the post of the url /polls/add_question/is 302 and it's redirects sucessfuly to the 'question_saved' page
         response=self.client.post(path='/polls/add_question/' , data={'question':'questionone'})
-        print(response)
         self.assertEqual(response.status_code,302)
     def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
         self.client.post(path='/polls/add_question/' , data={'question':'question_one'})
         question1=Question.objects.all()
         self.assertIsNotNone(question1)
-
-
-
-
-
-
-
+class choiceformtest(TestCase): #this class test the functionality of the choiceform class in the views.py
+    def test_post_request_retruns_status_code_302(self):
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        self.assertEqual(response.status_code,302)
+    def test_post_request_redirects_the_user_to_the_succeed_page(self): #tests that post request redirects user to the succeed page after it worked successfully  
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        self.assertEqual(response,'/polls/add_question/add_choice/questtion_saved')
+    def test_choice_form_using_the_correct_html_template(self): #tests that choice form is using the correct template
+        response=self.client.get(path='/polls/add_question/add_choice')
+        self.assertTemplateUsed(response,template_name='polls/choice_form.html')
+    def test_choices_are_saved_correctly_in_database(self): #tests that choices are saved successfully in the database.
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        choice=Choice.objects.filter(choice_text='choice_one')
+        self.assertIn(choice.first().choice_text,'choice_one')
+    def test_two_choices_are_not_the_same(self): #tests that choices are not the same.
+        self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
+        choice1=Choice.objects.filter(choice_text='choice_one').first().choice_text
+        choice2=Choice.objects.filter(choice_text='choice_two').first().choice_text
+        self.assertNotIn(choice2,'choice_two')
+    def test_do_not_redirect_user_if_choices_are_the_same(self): #test that the user do not redirect to the question saved page if it's saving the same choices by checking the status code.
+        response1=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        response2=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
+        self.assertNotEqual(response2.status_code,302)
+    def test_not_logged_in_user_can_not_use_choice_form_status_code_302(self): #test that only logged in users can use choice form and if not it returns 302 status code.
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        self.assertEqual(response.status_code, 302)
+    def test_shows_error_if_was_not_valid(self): #
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        self.assertRaises(TypeError)
+    def test_form_is_valid(self):
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        self.assertFalse(forms.AddChoiceForm.is_valid())
 
 
 

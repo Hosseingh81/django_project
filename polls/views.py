@@ -43,9 +43,7 @@ class Add_questionView(generic.FormView,SuccessMessageMixin):
     success_url = "/polls/question_saved/"
     def form_valid(self, form):
         if super().form_valid(form):
-            print(self.request.POST)
             question_text=self.request.POST['question']
-            print(question_text)
             Question.objects.create(question_text=question_text,pub_date=timezone.now())
         return super().form_valid(form)
 
