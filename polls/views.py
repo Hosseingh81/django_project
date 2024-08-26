@@ -50,6 +50,10 @@ class Add_questionView(generic.FormView,SuccessMessageMixin):
 def show_question_saved_page(request):
     return HttpResponse("question_saved")
 
+
+class AddChoiceView(generic.FormView):
+    form_class=AddquestionForm
+
     
 
 

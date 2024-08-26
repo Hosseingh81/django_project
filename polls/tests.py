@@ -245,9 +245,14 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
     def test_shows_error_if_was_not_valid(self): #
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
         self.assertRaises(TypeError)
-    def test_form_is_valid(self):
+    def test_form_is_valid(self): #check that the form validation works correctly
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
         self.assertFalse(forms.AddChoiceForm.is_valid())
+        
+
+
+
+
 
 
 
