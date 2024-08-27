@@ -8,10 +8,11 @@ from django.shortcuts import get_object_or_404, render
 from .models import Choice, Question,Vote
 from django.views import generic
 from django.utils import timezone
-from .forms import AddquestionForm
+from .forms import AddquestionForm, AddChoiceForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
+
 
 
 
@@ -40,22 +41,28 @@ class DetailView(generic.DetailView):
 class Add_questionView(generic.FormView,SuccessMessageMixin):
     form_class=AddquestionForm
     template_name="polls/add_question.html"  
-    success_url = "/polls/question_saved/"
+    success_url = 'add_choice'
     def form_valid(self, form):
         if super().form_valid(form):
-            question_text=self.request.POST['question']
+            question_text=form.cleaned_data['question']
             Question.objects.create(question_text=question_text,pub_date=timezone.now())
         return super().form_valid(form)
-
 def show_question_saved_page(request):
-    return HttpResponse("question_saved")
+    choice=Choice.objects.last()
+    return render(request,'polls/question_saved.html',{'choice':choice,'question':choice.question.question_text})
+
 
 
 class AddChoiceView(generic.FormView):
-    form_class=AddquestionForm
-
+    form_class=AddChoiceForm
+    template_name="polls/add_choice.html" 
+    success_url= "question_saved"
+    def form_valid(self, form):
+        if super().form_valid(form):
+            choice_text=form.cleaned_data['choice_text']
+            Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
+        return super().form_valid(form)
     
-
 
 
 
