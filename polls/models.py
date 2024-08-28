@@ -21,6 +21,7 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
+    saved_date=models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.choice_text
 # Create your models here.

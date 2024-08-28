@@ -9,6 +9,10 @@ from .urls import *
 from django.contrib.auth.models import User
 from django import forms
 from . import forms
+from datetime import timedelta,datetime
+
+from time import sleep
+
 
 
 class QuestionModelTests(TestCase):
@@ -17,7 +21,7 @@ class QuestionModelTests(TestCase):
         was_published_recently() returns False for questions whose pub_date
         is in the future.
         """
-        time = timezone.now() + datetime.timedelta(days=30)
+        time = timezone.now() + timedelta(days=30)
         future_question = Question(pub_date=time)
         self.assertIs(future_question.was_published_recently(), False)
 
@@ -26,7 +30,7 @@ class QuestionModelTests(TestCase):
         was_published_recently() returns False for questions whose pub_date
         is older than 1 day.
         """
-        time = timezone.now() - datetime.timedelta(days=1, seconds=1)
+        time = timezone.now() - timedelta(days=1, seconds=1)
         old_question = Question(pub_date=time)
         self.assertIs(old_question.was_published_recently(), False)
 
@@ -36,7 +40,7 @@ class QuestionModelTests(TestCase):
         was_published_recently() returns True for questions whose pub_date
         is within the last day.
         """
-        time = timezone.now() - datetime.timedelta(hours=23, minutes=59, seconds=59)
+        time = timezone.now() - timedelta(hours=23, minutes=59, seconds=59)
         recent_question = Question(pub_date=time)
         self.assertIs(recent_question.was_published_recently(), True)
     def test_is_string(self):
@@ -48,7 +52,7 @@ def create_question(question_text, days):
     given number of `days` offset to now (negative for questions published
     in the past, positive for questions that have yet to be published).
     """
-    time = timezone.now() + datetime.timedelta(days=days)
+    time = timezone.now() + timedelta(days=days)
     return Question.objects.create(question_text=question_text, pub_date=time)
 
 
@@ -250,6 +254,18 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
     # def test_form_is_valid(self): #check that the form validation works correctly
     #     response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
     #     self.assertFalse(AddChoiceView.is_valid())
+    def test_user_can_not_creat_two_questions_less_than_one_minute(self): #this test checks that time gap between saving two choices should be more than one minute.
+        with self.assertRaises(ValidationError):
+            self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
+            response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_one']})
+            response2=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_two']})
+            choice=Choice.objects.all()
+            choice2=choice.last()
+        # print(choice2_time-choice1_time)
+# timestamp:
+
+            
+
         
 
 

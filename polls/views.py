@@ -12,8 +12,8 @@ from .forms import AddquestionForm, AddChoiceForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
-
-
+from datetime import datetime
+from django.core.exceptions import ValidationError
 
 
 class IndexView(generic.ListView):
@@ -49,7 +49,7 @@ class Add_questionView(generic.FormView,SuccessMessageMixin):
         return super().form_valid(form)
 def show_question_saved_page(request):
     choice=Choice.objects.last()
-    return render(request,'polls/question_saved.html',{'choice':choice,'question':choice.question.question_text})
+    return render(request,'polls/question_saved.html',{'choice':choice,'question':choice.question.question_text,'pub_date':choice.saved_date})
 
 
 
@@ -59,8 +59,19 @@ class AddChoiceView(generic.FormView):
     success_url= "question_saved"
     def form_valid(self, form):
         if super().form_valid(form):
-            choice_text=form.cleaned_data['choice_text']
-            Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
+            if Choice.objects.all():
+                last_choice_time=datetime.timestamp(Choice.objects.last().saved_date)
+                self.time_gap=datetime.timestamp(timezone.now())-last_choice_time
+                if 61<self.time_gap:
+                    choice_text=form.cleaned_data['choice_text']
+                    Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
+                else:
+                    raise ValidationError([f"please wait {61-self.time_gap} seconds"])
+            else:
+                choice_text=form.cleaned_data['choice_text']
+                Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
+
+
         return super().form_valid(form)
     
 
