@@ -235,16 +235,16 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
         response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':["choice_one"]})
         choice=Choice.objects.all()
         self.assertIn(choice.first().choice_text,'choice_one')
-    # def test_two_choices_are_not_the_same(self): #tests that choices are not the same.
-    #     self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
-    #     self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
-    #     choice1=Choice.objects.filter(choice_text='choice_one').first().choice_text
-    #     choice2=Choice.objects.filter(choice_text='choice_two').first().choice_text
-    #     self.assertNotIn(choice2,'choice_two')
-    # def test_do_not_redirect_user_if_choices_are_the_same(self): #test that the user do not redirect to the question saved page if it's saving the same choices by checking the status code.
-    #     response1=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
-    #     response2=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
-        # self.assertNotEqual(response2.status_code,302)
+    def test_two_choices_are_not_the_same(self): #tests that choices are not the same.
+        with self.assertRaises(ValidationError):
+            self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
+            self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
+            sleep(61)
+            self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
+    def test_do_not_redirect_user_if_choices_are_the_same(self): #test that the user do not redirect to the question saved page if it's saving the same choices by checking the status code.
+        response1=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
+        response2=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
+        self.assertNotEqual(response2.status_code,302)
     # def test_not_logged_in_user_can_not_use_choice_form_status_code_302(self): #test that only logged in users can use choice form and if not it returns 302 status code.
     #     response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
     #     self.assertEqual(response.status_code, 302)
@@ -261,8 +261,6 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
             response2=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_two']})
             choice=Choice.objects.all()
             choice2=choice.last()
-        # print(choice2_time-choice1_time)
-# timestamp:
 
             
 

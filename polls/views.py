@@ -14,6 +14,12 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
 
 
 class IndexView(generic.ListView):
@@ -28,7 +34,6 @@ class IndexView(generic.ListView):
         return Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[
             :5
         ]
-
 class DetailView(generic.DetailView):
     model = Question
     template_name = "polls/detail.html"
@@ -37,7 +42,7 @@ class DetailView(generic.DetailView):
         Excludes any questions that aren't published yet.
         """
         return Question.objects.filter(pub_date__lte=timezone.now())
-
+    
 class Add_questionView(generic.FormView,SuccessMessageMixin):
     form_class=AddquestionForm
     template_name="polls/add_question.html"  
@@ -62,9 +67,13 @@ class AddChoiceView(generic.FormView):
             if Choice.objects.all():
                 last_choice_time=datetime.timestamp(Choice.objects.last().saved_date)
                 self.time_gap=datetime.timestamp(timezone.now())-last_choice_time
-                if 61<self.time_gap:
-                    choice_text=form.cleaned_data['choice_text']
-                    Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
+                if 2<self.time_gap: 
+                    self.choice_text=form.cleaned_data['choice_text']
+                    for c in Choice.objects.all():
+                        if c.choice_text!=self.choice_text:
+                            Choice.objects.create(choice_text=self.choice_text,question= Question.objects.last())
+                        else:
+                            raise ValidationError([f'your choice {self.choice_text} has been made.'])
                 else:
                     raise ValidationError([f"please wait {61-self.time_gap} seconds"])
             else:
