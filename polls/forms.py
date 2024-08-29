@@ -15,11 +15,17 @@ class AddquestionForm(forms.Form):
 #     choice_text=forms.CharField(label='choice_text',error_messages={"required":"this field can't be empty."})
 
 class AddChoiceForm(ModelForm):
+    """
+    this class handels data that user enters in the form, before saving it in the database.
+    """
     class Meta:
+
         model= Choice
         fields= ['choice_text']
 
         error_messages = {"choice_text": {"required": "this field can not be empty"}}
 
         labels= {'choice_text':'input your choice here'}
+
+
 

@@ -213,12 +213,19 @@ class QuestionDetailViewTests(TestCase):
 #         self.assertIsNotNone(question2_voted.first())
 class formstest(TestCase):
     def test_post_request_returns_status_code_302(self): #just test that the response code of the post of the url /polls/add_question/is 302 and it's redirects sucessfuly to the 'question_saved' page
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         response=self.client.post(path='/polls/add_question/' , data={'question':['questionone']})
         self.assertEqual(response.status_code,302)
     def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
         question1=Question.objects.all()
         self.assertIsNotNone(question1)
+    def test_not_logged_in_user_can_not_use_question_form_status_code_301(self): #test that only logged in users can use question form and if not it returns 302 status code.
+        response=self.client.post(path='/polls/add_question/add_choice' , data={'question':'question_one'})
+        self.assertEqual(response.status_code, 301)
 class choiceformtest(TestCase): #this class test the functionality of the choiceform class in the views.py
     def test_post_request_retruns_status_code_301(self): #this test checks that status code is 301
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':['choice_one']})
@@ -239,15 +246,13 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
         with self.assertRaises(ValidationError):
             self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
             self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
-            sleep(61)
+            # sleep(61)
             self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
     def test_do_not_redirect_user_if_choices_are_the_same(self): #test that the user do not redirect to the question saved page if it's saving the same choices by checking the status code.
         response1=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
         response2=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
         self.assertNotEqual(response2.status_code,302)
-    # def test_not_logged_in_user_can_not_use_choice_form_status_code_302(self): #test that only logged in users can use choice form and if not it returns 302 status code.
-    #     response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
-    #     self.assertEqual(response.status_code, 302)
+
     def test_shows_error_if_was_not_valid(self): #shows the forms error
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':['choice_one']})
         self.assertRaises(TypeError)

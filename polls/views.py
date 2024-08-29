@@ -57,23 +57,24 @@ def show_question_saved_page(request):
     return render(request,'polls/question_saved.html',{'choice':choice,'question':choice.question.question_text,'pub_date':choice.saved_date})
 
 
-
+@method_decorator(login_required, name='dispatch')
 class AddChoiceView(generic.FormView):
     form_class=AddChoiceForm
     template_name="polls/add_choice.html" 
     success_url= "question_saved"
     def form_valid(self, form):
         if super().form_valid(form):
+            print(self.request.user)
             if Choice.objects.all():
                 last_choice_time=datetime.timestamp(Choice.objects.last().saved_date)
                 self.time_gap=datetime.timestamp(timezone.now())-last_choice_time
-                if 2<self.time_gap: 
+                if 61<self.time_gap: 
                     self.choice_text=form.cleaned_data['choice_text']
                     for c in Choice.objects.all():
-                        if c.choice_text!=self.choice_text:
-                            Choice.objects.create(choice_text=self.choice_text,question= Question.objects.last())
+                        if c.choice_text==self.choice_text:
+                            raise ValidationError([f'your choice {self.choice_text} has been made.'])                           
                         else:
-                            raise ValidationError([f'your choice {self.choice_text} has been made.'])
+                            Choice.objects.create(choice_text=self.choice_text,question= Question.objects.last())
                 else:
                     raise ValidationError([f"please wait {61-self.time_gap} seconds"])
             else:
