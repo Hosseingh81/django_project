@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django import forms
 from . import forms
 from datetime import timedelta,datetime
+from freezegun import freeze_time
 
 from time import sleep
 
@@ -231,36 +232,52 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':['choice_one']})
         self.assertEqual(response.status_code,301)
     def test_post_request_redirects_the_user_to_the_succeed_page(self): #tests that post request redirects user to the succeed page after it worked successfully  
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
         response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_one']})
         self.assertRedirects(response,'/polls/add_question/add_choice/question_saved',target_status_code=301)
     def test_choice_form_using_the_correct_html_template(self): #tests that choice form is using the correct template
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         response=self.client.get(path='/polls/add_question/add_choice/')
         self.assertTemplateUsed(response,template_name='polls/add_choice.html')
     def test_choices_are_saved_correctly_in_database(self): #tests that choices are saved successfully in the database.
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
         response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':["choice_one"]})
         choice=Choice.objects.all()
         self.assertIn(choice.first().choice_text,'choice_one')
     def test_two_choices_are_not_the_same(self): #tests that choices are not the same.
         with self.assertRaises(ValidationError):
+            self.user1=User.objects.create(username='user1',password='user1')
+            self.client.force_login(user=self.user1)
             self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
             self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
-            # sleep(61)
             self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
     def test_do_not_redirect_user_if_choices_are_the_same(self): #test that the user do not redirect to the question saved page if it's saving the same choices by checking the status code.
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         response1=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
         response2=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
         self.assertNotEqual(response2.status_code,302)
 
     def test_shows_error_if_was_not_valid(self): #shows the forms error
+        self.user1=User.objects.create(username='user1',password='user1')
+        self.client.force_login(user=self.user1)
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':['choice_one']})
         self.assertRaises(TypeError)
     # def test_form_is_valid(self): #check that the form validation works correctly
+    #     self.user1=User.objects.create(username='user1',password='user1')
+    #     self.client.force_login(user=self.user1)
     #     response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
-    #     self.assertFalse(AddChoiceView.is_valid())
+    #     print(AddChoiceView.form_class.is_valid.__dict__)
+    #     # self.assertFalse(AddChoiceView.form_class)
     def test_user_can_not_creat_two_questions_less_than_one_minute(self): #this test checks that time gap between saving two choices should be more than one minute.
         with self.assertRaises(ValidationError):
+            self.user1=User.objects.create(username='user1',password='user1')
+            self.client.force_login(user=self.user1)
             self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
             response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_one']})
             response2=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_two']})

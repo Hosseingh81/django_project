@@ -63,25 +63,22 @@ class AddChoiceView(generic.FormView):
     template_name="polls/add_choice.html" 
     success_url= "question_saved"
     def form_valid(self, form):
-        if super().form_valid(form):
-            print(self.request.user)
-            if Choice.objects.all():
-                last_choice_time=datetime.timestamp(Choice.objects.last().saved_date)
-                self.time_gap=datetime.timestamp(timezone.now())-last_choice_time
-                if 61<self.time_gap: 
-                    self.choice_text=form.cleaned_data['choice_text']
-                    for c in Choice.objects.all():
-                        if c.choice_text==self.choice_text:
-                            raise ValidationError([f'your choice {self.choice_text} has been made.'])                           
-                        else:
-                            Choice.objects.create(choice_text=self.choice_text,question= Question.objects.last())
-                else:
-                    raise ValidationError([f"please wait {61-self.time_gap} seconds"])
+        if Choice.objects.all():
+            last_choice_time=datetime.timestamp(Choice.objects.last().saved_date)
+            self.time_gap=datetime.timestamp(timezone.now())-last_choice_time
+            if 30<self.time_gap: 
+                self.choice_text=form.cleaned_data['choice_text']
+                last_choices=Choice.objects.all()
+                x=last_choices.filter(question=Question.objects.last())
+                for y in x:
+                    if y.choice_text==self.choice_text:
+                        raise ValidationError(["please input another choice, you choice has been entered before."])
+                Choice.objects.create(choice_text=self.choice_text,question= Question.objects.last())
             else:
-                choice_text=form.cleaned_data['choice_text']
-                Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
-
-
+                raise ValidationError([f"please wait {61-self.time_gap} seconds"])
+        else:
+            choice_text=form.cleaned_data['choice_text']
+            Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
         return super().form_valid(form)
     
 
