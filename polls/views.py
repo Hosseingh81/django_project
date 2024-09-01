@@ -52,10 +52,6 @@ class Add_questionView(generic.FormView,SuccessMessageMixin):
             question_text=form.cleaned_data['question']
             Question.objects.create(question_text=question_text,pub_date=timezone.now())
         return super().form_valid(form)
-def show_question_saved_page(request):
-    choice=Choice.objects.last()
-    return render(request,'polls/question_saved.html',{'choice':choice,'question':choice.question.question_text,'pub_date':choice.saved_date})
-
 
 @method_decorator(login_required, name='dispatch')
 class AddChoiceView(generic.FormView):
@@ -66,12 +62,11 @@ class AddChoiceView(generic.FormView):
         if Choice.objects.all():
             last_choice_time=datetime.timestamp(Choice.objects.last().saved_date)
             self.time_gap=datetime.timestamp(timezone.now())-last_choice_time
-            if 30<self.time_gap: 
+            if 60<self.time_gap: 
                 self.choice_text=form.cleaned_data['choice_text']
-                last_choices=Choice.objects.all()
-                x=last_choices.filter(question=Question.objects.last())
-                for y in x:
-                    if y.choice_text==self.choice_text:
+                last_choices=Choice.objects.filter(question=Question.objects.last())
+                for c in last_choices:
+                    if c.choice_text==self.choice_text:
                         raise ValidationError(["please input another choice, you choice has been entered before."])
                 Choice.objects.create(choice_text=self.choice_text,question= Question.objects.last())
             else:
@@ -80,6 +75,10 @@ class AddChoiceView(generic.FormView):
             choice_text=form.cleaned_data['choice_text']
             Choice.objects.create(choice_text=choice_text,question= Question.objects.last())
         return super().form_valid(form)
+    
+def show_question_saved_page(request):
+    choice=Choice.objects.last()
+    return render(request,'polls/question_saved.html',{'choice':choice,'question':choice.question.question_text,'pub_date':choice.saved_date})
     
 
 

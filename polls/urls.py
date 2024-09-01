@@ -1,5 +1,4 @@
 from django.urls import path
-from django.urls import path, include
 
 from . import views
 
@@ -11,5 +10,4 @@ urlpatterns = [
     path("add_question/",views.Add_questionView.as_view(),name="add_question"),
     path("add_question/add_choice/",views.AddChoiceView.as_view(),name="add_choice"),
     path("add_question/add_choice/question_saved/",views.show_question_saved_page,name="question_saved"),
-    path("accounts/", include("django.contrib.auth.urls")),
 ]

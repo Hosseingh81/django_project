@@ -11,10 +11,19 @@ from django import forms
 from . import forms
 from datetime import timedelta,datetime
 from freezegun import freeze_time
+from unittest.mock import patch
+import datetime
 
-from time import sleep
 
 
+def create_question(question_text, days):
+    """
+    Create a question with the given `question_text` and published the
+    given number of `days` offset to now (negative for questions published
+    in the past, positive for questions that have yet to be published).
+    """
+    time = timezone.now() + timedelta(days=days)
+    return Question.objects.create(question_text=question_text, pub_date=time)
 
 class QuestionModelTests(TestCase):
     def test_was_published_recently_with_future_question(self):
@@ -47,14 +56,7 @@ class QuestionModelTests(TestCase):
     def test_is_string(self):
         q=Question(question_text="text")
         self.assertIs(q.is_string(),True)
-def create_question(question_text, days):
-    """
-    Create a question with the given `question_text` and published the
-    given number of `days` offset to now (negative for questions published
-    in the past, positive for questions that have yet to be published).
-    """
-    time = timezone.now() + timedelta(days=days)
-    return Question.objects.create(question_text=question_text, pub_date=time)
+
 
 
 class QuestionIndexViewTests(TestCase):
@@ -212,36 +214,42 @@ class QuestionDetailViewTests(TestCase):
 #         self.client.post(path='/polls/2/vote/',data={'choice':['2']})
 #         question2_voted=Vote.objects.filter(choice=Choice.objects.get(id=2))
 #         self.assertIsNotNone(question2_voted.first())
-class formstest(TestCase):
+class FormsTest(TestCase):
     def test_post_request_returns_status_code_302(self): #just test that the response code of the post of the url /polls/add_question/is 302 and it's redirects sucessfuly to the 'question_saved' page
         self.user1=User.objects.create(username='user1',password='user1')
         self.client.force_login(user=self.user1)
         response=self.client.post(path='/polls/add_question/' , data={'question':['questionone']})
         self.assertEqual(response.status_code,302)
+
     def test_question_saved_in_database(self): #test that the question has been saved in the database after submiting it
         self.user1=User.objects.create(username='user1',password='user1')
         self.client.force_login(user=self.user1)
         self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
         question1=Question.objects.all()
         self.assertIsNotNone(question1)
+
     def test_not_logged_in_user_can_not_use_question_form_status_code_301(self): #test that only logged in users can use question form and if not it returns 302 status code.
         response=self.client.post(path='/polls/add_question/add_choice' , data={'question':'question_one'})
         self.assertEqual(response.status_code, 301)
-class choiceformtest(TestCase): #this class test the functionality of the choiceform class in the views.py
+
+class FRONT_END_ChoiceFormTest(TestCase): #this class test the functionality of the choiceform class in the views.py
     def test_post_request_retruns_status_code_301(self): #this test checks that status code is 301
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':['choice_one']})
         self.assertEqual(response.status_code,301)
+
     def test_post_request_redirects_the_user_to_the_succeed_page(self): #tests that post request redirects user to the succeed page after it worked successfully  
         self.user1=User.objects.create(username='user1',password='user1')
         self.client.force_login(user=self.user1)
         self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
         response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_one']})
         self.assertRedirects(response,'/polls/add_question/add_choice/question_saved',target_status_code=301)
+        
     def test_choice_form_using_the_correct_html_template(self): #tests that choice form is using the correct template
         self.user1=User.objects.create(username='user1',password='user1')
         self.client.force_login(user=self.user1)
         response=self.client.get(path='/polls/add_question/add_choice/')
         self.assertTemplateUsed(response,template_name='polls/add_choice.html')
+
     def test_choices_are_saved_correctly_in_database(self): #tests that choices are saved successfully in the database.
         self.user1=User.objects.create(username='user1',password='user1')
         self.client.force_login(user=self.user1)
@@ -249,42 +257,34 @@ class choiceformtest(TestCase): #this class test the functionality of the choice
         response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':["choice_one"]})
         choice=Choice.objects.all()
         self.assertIn(choice.first().choice_text,'choice_one')
+
     def test_two_choices_are_not_the_same(self): #tests that choices are not the same.
         with self.assertRaises(ValidationError):
-            self.user1=User.objects.create(username='user1',password='user1')
-            self.client.force_login(user=self.user1)
-            self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
-            self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
-            self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
-    def test_do_not_redirect_user_if_choices_are_the_same(self): #test that the user do not redirect to the question saved page if it's saving the same choices by checking the status code.
-        self.user1=User.objects.create(username='user1',password='user1')
-        self.client.force_login(user=self.user1)
-        response1=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
-        response2=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_two'})
-        self.assertNotEqual(response2.status_code,302)
+            initial_datetime = datetime.datetime(year=1, month=1, day=1,hour=1, minute=1, second=1)
+            other_datetime = datetime.datetime(year=1, month=1, day=1,hour=1, minute=2, second=2)
+            with freeze_time(initial_datetime) as frozen_datetime:
+                self.user1=User.objects.create(username='user1',password='user1')
+                self.client.force_login(user=self.user1)
+                self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
+                self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
+                frozen_datetime.move_to(other_datetime)
+                self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':'choice'})
 
     def test_shows_error_if_was_not_valid(self): #shows the forms error
         self.user1=User.objects.create(username='user1',password='user1')
         self.client.force_login(user=self.user1)
         response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':['choice_one']})
         self.assertRaises(TypeError)
-    # def test_form_is_valid(self): #check that the form validation works correctly
-    #     self.user1=User.objects.create(username='user1',password='user1')
-    #     self.client.force_login(user=self.user1)
-    #     response=self.client.post(path='/polls/add_question/add_choice' , data={'choice_text':'choice_one'})
-    #     print(AddChoiceView.form_class.is_valid.__dict__)
-    #     # self.assertFalse(AddChoiceView.form_class)
-    def test_user_can_not_creat_two_questions_less_than_one_minute(self): #this test checks that time gap between saving two choices should be more than one minute.
+
+    def test_user_can_not_creat_two_choices_less_than_one_minute(self): #this test checks that time gap between saving two choices should be more than one minute.
         with self.assertRaises(ValidationError):
             self.user1=User.objects.create(username='user1',password='user1')
             self.client.force_login(user=self.user1)
             self.client.post(path='/polls/add_question/' , data={'question':['question_one']})
-            response=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_one']})
-            response2=self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_two']})
-            choice=Choice.objects.all()
-            choice2=choice.last()
-
+            self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_one']})
+            self.client.post(path='/polls/add_question/add_choice/' , data={'choice_text':['choice_two']})
             
+
 
         
 
