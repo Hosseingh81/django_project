@@ -1,0 +1,8 @@
+<form method="POST" novalidate>
+    <div>
+    {% csrf_token %} 
+    {{ form.as_p }}
+    <li>{{q_id}}<li/>
+        <input type = "submit" value = "Submit" >   
+    </div>
+</form> 

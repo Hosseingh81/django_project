@@ -1,5 +1,4 @@
 from django.utils import timezone
-# from datetime import datetime
 from django.db import models
 from datetime import timedelta
 from django.contrib.auth.models import User
@@ -21,9 +20,9 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
+    saved_date=models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.choice_text
-# Create your models here.
 
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
